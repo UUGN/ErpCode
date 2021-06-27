@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <title>중고거래홈페이지 회원가입</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <!-- 네비게이션 바 시작 -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
+          <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                  aria-expanded="false">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="{% url 'index' %}">중고거래홈페이지</a>
+          </div>
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <ul class="nav navbar-nav">
+                  <li>
+                      <a href="{% url 'index' %}">Home</a>
+                  </li>
+                  <li class="active">
+                      <a id="joinmenu" href="{% url 'join' %}">가입</a>
+                  </li>
+                  <li>
+                      <a id="loginmenu" href="{% url 'login' %}">로그인</a>
+                  </li>
+              </ul>
+          </div>
+          <!-- /.navbar-collapse -->
+      </div>
+      <!-- /.container-fluid -->
+  </nav>
+<br>
+<br>
+<br>
+<br>
+<br>
+  <!-- 네비게이션 바 끝 -->
+<!-- 가입 폼 시작 -->
+<div class="container">
+    <h1>회원가입 페이지</h1>
+    <div class="form-group">
+      <label for="email">이메일 주소 입력</label>
+      <input type="email" class="form-control" id="email" placeholder="이메일 주소 입력">
+
+    </div>
+    <button type="button" class="btn btn-default email">이메일 인증</button>
+
+    <div class="form-group">
+
+    </div>
+
+    <div class="form-group">
+            <label for="name">닉네임 입력</label>
+            <input type="text" class="form-control" id="name" placeholder="닉네임 입력">
+            <div id="checkMsg"> </div>
+
+            <input type="text" class="username_input" name="username" check_result="fail" required />
+            <button type="button" class="id_overlap_button" onclick="id_overlap_check()">중복검사</button>
+            <img id="id_check_sucess" style="display: none;">
+    </div>
+    <button type="submit" id="checkbtn" class="btn btn-default">중복확인</button>
+
+    <div class="form-group">
+
+    </div>
+
+    <div class="form-group">
+      <label for="pwd">비밀번호</label>
+      <input type="password" class="form-control" id="pwd" placeholder="Password">
+    </div>
+    <div class="form-group">
+      <label for="pwd">비밀번호 확인</label>
+      <input type="password" class="form-control" id="pwd2" placeholder="Re Password">
+    </div>
+    <button type="button" class="btn btn-default join">가입하기</button>
+</div>
+<!-- 가입 폼 끝 -->
+<!--스크립트 부분. 자신의 스크립트 코드 -->
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+<!-- TODO: Add SDKs for Firebase products that you want to use
+   https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-database.js"></script>
+<script>
+	/* 중복체크! */ // 안됨
+    $(document).ready(function(){
+        $('#checkbtn').on('click', function(){
+            $.ajax({
+                type: "GET",
+
+                data: {
+                    "id" : $('#name').val()
+                },
+                success: function(data){
+                    if($.trim(data) == 0){
+                        $('checkMsg').html('<p style="color:blue">사용가능</p>');
+                    }
+                    else {
+                        $('checkMsg').html('<p style="color:red">사용불가</p>');
+                    }
+                }
+            });
+        });
+    });
+</script>
+<script>
+    var firebaseEmailAuth; //파이어베이스 email 인증 모듈 전역변수
+    var firebaseDatabase; //파이어베이스 db 모듈 전역변수
+    var userInfo; //가입한 유저의 정보. object 타입
+    //파이어 베이스 초기화 코드
+    var firebaseConfig = {
+      apiKey: "AIzaSyDCS1s-3P2QUXv7jG4qdHxqjVWPQQQoJ98",
+      authDomain: "jonggo-bc5df.firebaseapp.com",
+      databaseURL: "https://jonggo-bc5df-default-rtdb.firebaseio.com",
+      projectId: "jonggo-bc5df",
+      storageBucket: "jonggo-bc5df.appspot.com",
+      messagingSenderId: "100699940779",
+      appId: "1:100699940779:web:6047a0d8040805faf114ee",
+      measurementId: "G-7J93P2XQDM"
+    };
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    firebaseEmailAuth = firebase.auth();
+    firebaseDatabase = firebase.database();
+    //제이쿼리
+    $(document).ready(function(){
+
+      //가입버튼 눌렀을 때 작동하는 함수
+      $(document).on('click','.join',function(){
+        //jquery를 이용해서 입력된 값을 가져온다.
+        var email = $('#email').val();
+        var password = $('#pwd').val();
+        var password2 = $('#pwd2').val();
+        name = $('#name').val();
+
+        //Email 체크
+        if(email == "") {
+            alert("Email을 입력해주세요");
+            return;
+        }
+        //Name체크
+        if(name == "") {
+            alert("Name을 입력해주세요");
+            return;
+        }
+        //Re password 체크
+        if(password != password2) {
+            alert("패스워드를 다시 확인해주세요");
+            return;
+        }
+
+        //이메일로 가입 버튼 눌렀을 때 작동되는 함수 - firebase 인증 모듈
+        firebaseEmailAuth.createUserWithEmailAndPassword(email, password).then(function(user) {
+
+<<<<<<< HEAD
+            userInfo = user; //가입 후 callBack 함수로 생성된 유저의 정보가 user에 담겨서 넘어온다. 전역변수에 할당.
+
+            //뭐가 찍히는지 직접 체크
+            //console.log("userInfo/"+userInfo); //오브젝트 타입
+            //console.log("userInfo.currentUser/"+userInfo.currentUser); //안됨
+            //console.log("userInfo.uid/"+userInfo.uid); //vPArtCHqPpOeIOpidEfug0Kgq3v1
+
+            //Re password 체크
+
+
+            //이메일 인증
+            let user_01 = firebaseEmailAuth.currentUser;
+=======
+        firebaseEmailAuth.createUserWithEmailAndPassword(email, password).catch(function(error) {
+            // Handle Errors here.
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            // [START_EXCLUDE]
+            if (errorCode === 'auth/wrong-password') {
+                alert('Wrong password.');
+            } else {
+                alert(errorMessage);
+            }
+            console.log(error);
+            isAdduser = false;
+            // document.getElementById('quickstart-sign-in').disabled = false;
+            // [END_EXCLUDE]
+        });
+      });
+    });
+            /**
+            * initApp handles setting up UI event listeners and registering Firebase auth listeners:
+            * - firebase.auth().onAuthStateChanged: This listener is called when the user is signed in or
+            * out, and that is where we update the UI.
+            */
+        function initApp() {
+            // Listening for auth state changes.
+            // [START authstatelistener]
+            firebase.auth().onAuthStateChanged(function(user) {
+            // [START_EXCLUDE silent]
+            // [END_EXCLUDE]
+            if (user && isAdduser ) {
+            // User is signed in.
+>>>>>>> origin/main
+
+            user_01.sendEmailVerification().then(function() {
+                    alert("이메일 전송");
+                    logUser();
+            }).catch(function(error){
+                    //alert("에러");
+            })
+
+            userInfo = user; //가입 후 callBack 함수로 생성된 유저의 정보가 user에 담겨서 넘어온다. 전역변수에 할당.
+
+            //뭐가 찍히는지 직접 체크
+            //console.log("userInfo/"+userInfo); //오브젝트 타입
+            //console.log("userInfo.currentUser/"+userInfo.currentUser); //안됨
+            //console.log("userInfo.uid/"+userInfo.uid); //vPArtCHqPpOeIOpidEfug0Kgq3v1
+
+            //이메일 인증 끝
+            logUser();
+
+
+        }, function(error) {
+            //에러가 발생했을 때
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            alert(errorMessage);
+
+        })
+
+        //가입 성공했을 때 호출 되는 함수 - 위의 firebase의 인증 모듈과 다른 database 모듈임을 확인하자.
+        function logUser(){
+            var ref = firebaseDatabase.ref("users/"+userInfo.uid); //저장될 곳을 users라는 부모 키를 레퍼런스로 지정.
+            //저장 형식
+            var obj = {
+                name: name,
+            };
+            ref.set(obj); // 고유한 자식 키가 하나 생셩이 되면서 json 삽입
+            alert("가입성공. 이메일 인증을 완료한 후 로그인 하세요");
+            //메인 페이지로 이동시키고 세션 저장시키기
+            window.location.href = "{% url 'index' %}"
+        }
+      });
+    });
+  </script>
+</body>
+</html>

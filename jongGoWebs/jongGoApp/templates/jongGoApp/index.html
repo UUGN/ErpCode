@@ -81,7 +81,12 @@
             </br>
             <button type="button" class="btn btn-default join">조회</button>
     </div>
+    {% for posts in posts.all%}
+    <h1>{{posts.product_idx}}</h1>
+    {%endfor%}
   </div>
+
+
 
 
   <!--스크립트 부분. 자신의 스크립트 코드 -->
